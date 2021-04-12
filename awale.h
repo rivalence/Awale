@@ -9,11 +9,12 @@ int seeds_player; // seeds taken by the player
 int seeds_computer; // seeds taken by the computer
 } Position;
 
-int minMaxValue(Position, int , int, int); //Valeur max calculée
+int minMaxValue(Position*, int , int, int); //Valeur max calculée
 int finalPosition(Position, int, int);
-int searchMax(int*);
-int searchMin(int*);
-void playMove(Position, int, int);
-int evaluation(int*, int);
-Position initialisation(Position);
-void affiche();
+int searchMax(int*, int);
+int searchMin(int*, int);
+void playMove(Position*, Position*, int, int);
+int evaluation(Position*, int, int);
+void initialisation(Position*);
+void affiche(Position*);
+void copieValeur(Position*, Position*);
