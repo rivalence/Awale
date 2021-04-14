@@ -5,7 +5,7 @@
 
 int minMaxValue(Position *position_current, int computer_play ,int depth, int depthMax){
     int tab_values[8] = {0,0,0,0,0,0,0,0};
-    int i, res, graines_restantes, affame;
+    int i, res, affame;
     Position position_next;
     affame = etatAffame(position_current);
     if (affame == 0 || affame == 1){
@@ -24,7 +24,7 @@ int minMaxValue(Position *position_current, int computer_play ,int depth, int de
 
     for (i=0; i<8; i++){
         if (position_current->cells_computer[i]){
-            graines_restantes = playMove(position_current, &position_next, i, computer_play);
+            playMove(position_current, &position_next, i, computer_play);
             tab_values[i] = minMaxValue(&position_next, !computer_play, depth+1, depthMax); 
         }
         else{
@@ -42,12 +42,13 @@ int minMaxValue(Position *position_current, int computer_play ,int depth, int de
 
 //==========================================================================
 void affiche(Position* pos){
+    int j=16;
     for (int i=0; i<8; i++){
-        printf(" %d",pos->cells_computer[i]);
+        printf("%d[%d] ",i+1,pos->cells_computer[i]);
     }
-    printf("\n==================\n");
+    printf("\n===============================================\n");
     for (int i=0; i<8; i++){
-        printf(" %d",pos->cells_player[i]);
+        printf("%d[%d] ",j-i,pos->cells_player[i]);
     }
 
     printf("\n\n");
@@ -77,6 +78,12 @@ void initialisation(Position* pos){ //Etat initial de la grille
     pos->computer_play = 1;
     pos->seeds_computer = 0;
     pos->seeds_player = 0;
+    if (pos->computer_play){
+        pos->debut = 1;
+    }
+    else{
+        pos->debut = 10;
+    }
 }
 
 //==========================================================================
@@ -94,15 +101,44 @@ void deliberation(Position* pos){
 
 //==========================================================================
 int verificationCase(int index_choisi){
-    if (index_choisi < 1 || index_choisi > 8){
+    if (index_choisi < 9 || index_choisi > 16){
          do
         {
-            printf("Entrez une position entre 1 et 8: ");
+            printf("Entrez une position entre 9 et 16: ");
             scanf("%d",&index_choisi); 
-        } while (index_choisi < 1 || index_choisi > 8);
+        } while (index_choisi < 9 || index_choisi > 16);
     }
 
     return index_choisi;
+}
+
+//==========================================================================
+int changeIndex(int index_choisi){
+    if (index_choisi == 16){
+        return 1;
+    }
+    if (index_choisi == 15){
+        return 2;
+    }
+    if (index_choisi == 14){
+        return 3;
+    }
+    if (index_choisi == 13){
+        return 4;
+    }
+    if (index_choisi == 12){
+        return 5;
+    }
+    if (index_choisi == 11){
+        return 6;
+    }
+    if (index_choisi == 10){
+        return 7;
+    }
+    if (index_choisi == 9){
+        return 8;
+    }
+    return 15;
 }
 
 //==========================================================================
@@ -118,7 +154,7 @@ int finalPosition(Position* pos_current, int computer_play){
 }
 
 //==========================================================================
-int etatAffame(Position* pos_current){  //Vérifie si chaque a toujours des graines. Sinon il perd
+int etatAffame(Position* pos_current){  //Vérifie si chaque joueur a toujours des graines. Sinon il perd
     int seeds = 0;
     for (int i=0; i<8; i++){
         seeds += pos_current->cells_computer[i];
@@ -149,7 +185,19 @@ int evaluation(Position* pos, int computer_play){
     double valmax_double=0.0, seeds_cpu=0.0, seeds_player=0.0;
     int valmax_int;
     if (computer_play){
-        return pos->seeds_player;
+        if (pos->seeds_player != 0){
+            if (pos->seeds_computer == 0){
+                return 1000;
+            }
+            seeds_cpu = pos->seeds_computer * 1.0;
+            seeds_player = pos->seeds_player * 1.0;
+            valmax_double = seeds_cpu / seeds_player;
+            valmax_int = (int)(valmax_double * (-100));
+        }
+        else{
+            valmax_int = pos->seeds_computer * (-6500);
+        }
+        return valmax_int;
     }
     else {
         if (pos->seeds_player != 0){
@@ -285,4 +333,11 @@ int playMove(Position *position_current, Position* position_next, int index, int
     nbre_graines = getTotalSeeds(position_next);
 
     return nbre_graines;    
+}
+
+//==========================================================================
+void vider_buffer(FILE* f)
+{
+    int c;
+    while ((c=fgetc(f)) != '\n' && c != EOF);
 }

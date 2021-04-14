@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#define DEPTHMAX 7
+#define DEPTHMAX 8
 
 typedef struct {
 int cells_player[8]; // each cell contains a certain number of seeds
@@ -9,6 +9,7 @@ int computer_play; // boolean true if the computer has to play and false otherwi
 int seeds_player; // seeds taken by the player
 int seeds_computer; // seeds taken by the computer
 char name[20];
+int debut;
 } Position;
 
 int minMaxValue(Position*, int , int, int); //Valeur max calculée
@@ -24,3 +25,5 @@ int getTotalSeeds(Position*);
 int verificationCase(int);
 void deliberation(Position*);
 int etatAffame(Position*);
+void vider_buffer(FILE*);
+int changeIndex(int);
