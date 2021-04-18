@@ -89,13 +89,13 @@ void initialisation(Position* pos){ //Etat initial de la grille
 //==========================================================================
 void deliberation(Position* pos){
     if (pos->seeds_computer > pos->seeds_player){
-        printf("Fin du jeu ! Le CPU remporte la partie");
+        printf("Fin du jeu ! Le CPU remporte la partie\n");
     }
     else if(pos->seeds_player > pos->seeds_computer){
-        printf("Fin du jeu ! %s remporte la partie", pos->name);
+        printf("Fin du jeu ! %s remporte la partie\n", pos->name);
     }
     else{
-        printf("Le jeu se termine sur un match nul !");
+        printf("Le jeu se termine sur un match nul !\n");
     }
 }
 
@@ -263,8 +263,38 @@ int searchMin(int* tab, int depth){
 }
 
 //==========================================================================
+int getLastIndexPlayer(int j){
+    int index_player = -1;
+    if (j==-1){
+        index_player=0;
+    }
+    if (j==-2){
+        index_player=1;
+    }
+    if (j==-3){
+        index_player=2;
+    }
+    if (j==-4){
+        index_player=3;
+    }
+    if (j==-5){
+        index_player=4;
+    }
+    if (j==-6){
+        index_player=5;
+    }
+    if (j==-7){
+        index_player=6;
+    }
+    if (j==-8){
+        index_player=7;
+    }
+    return index_player;
+}
+
+//==========================================================================
 int playMove(Position *position_current, Position* position_next, int index, int computer_play){
-    int seeds = 0, j, i, nbre_graines;
+    int seeds = 0, j, i, nbre_graines, index_player = -1;
     
     copieValeur(position_next, position_current);
     if(computer_play){
@@ -284,20 +314,26 @@ int playMove(Position *position_current, Position* position_next, int index, int
             }
             else{
                 position_next->cells_player[j-i]++;
-                if (position_next->cells_player[j-i] > 1 && position_next->cells_player[j-i] < 4){
-                    position_next->seeds_computer += position_next->cells_player[j-i];
-                    position_next->cells_player[j-i] = 0;
-                }
                 i += 2;
             }    
-
             seeds--;
             j++;
             if (j>15){
                 j=0;
                 i=1;
                 }
-        }     
+        }
+        j--;
+        while(j>7){
+            if (position_next->cells_player[15-j] > 1 && position_next->cells_player[15-j] < 4){
+                position_next->seeds_computer += position_next->cells_player[15-j];
+                position_next->cells_player[15-j] = 0;
+                j--;
+            }
+            else{
+                break;
+            }
+        }
     }
     else{
         seeds = position_next->cells_player[index];
@@ -314,10 +350,6 @@ int playMove(Position *position_current, Position* position_next, int index, int
             }
             else{
                 position_next->cells_computer[j+i]++;
-                if (position_next->cells_computer[j+i] > 1 && position_next->cells_computer[j+i] < 4){
-                    position_next->seeds_player += position_next->cells_computer[j+i];
-                    position_next->cells_computer[j+i] = 0;
-                }
                 i += 2;
             }    
 
@@ -327,7 +359,21 @@ int playMove(Position *position_current, Position* position_next, int index, int
                 j = 7;
                 i = 1;
             }
-        } 
+        }
+        j++;
+        index_player = getLastIndexPlayer(j);
+        while (index_player>-1)
+        {
+            if (position_next->cells_computer[index_player] > 1 && position_next->cells_computer[index_player] < 4){
+                    position_next->seeds_player += position_next->cells_computer[index_player];
+                    position_next->cells_computer[index_player] = 0;
+                    index_player--;
+                }
+            else{
+                break;
+            }
+        }
+         
     }
 
     nbre_graines = getTotalSeeds(position_next);

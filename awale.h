@@ -27,3 +27,4 @@ void deliberation(Position*);
 int etatAffame(Position*);
 void vider_buffer(FILE*);
 int changeIndex(int);
+int getLastIndexPlayer(int);
