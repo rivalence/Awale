@@ -12,12 +12,13 @@ initialisation(&position);
 affiche(&position);
 printf("Nom du joueur:");
 scanf("%s",position.name);
+printf("\n|       DEBUT DE LA PARTIE      |\n\n");
 while(graines_restantes>8){
         if (position.computer_play){
                 if (position.debut != 1){
                         printf("Au tour du cpu :\n");
                         best_index = minMaxValue(&position, position.computer_play, 1, DEPTHMAX);
-                        printf("cpu a joué la case numéro %d\n\n", best_index+1);
+                        printf("Le cpu a joué la case numéro %d\n\n", best_index+1);
                         graines_restantes = playMove(&position, &position, best_index, position.computer_play);
                         affiche(&position);
                         printf ("\nGraines restantes sur le plateau: %d", graines_restantes);
@@ -33,7 +34,7 @@ while(graines_restantes>8){
                 else{
                         best_index = rand() % 8;
                         printf("Au tour du cpu :\n");
-                        printf("cpu a joué la case numéro %d\n\n", best_index+1);
+                        printf("Le cpu a joué la case numéro %d\n\n", best_index+1);
                         graines_restantes = playMove(&position, &position, best_index, position.computer_play);
                         affiche(&position);
                         printf ("\nGraines restantes sur le plateau: %d", graines_restantes);

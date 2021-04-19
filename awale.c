@@ -3,41 +3,69 @@
 #include <math.h>
 #include "awale.h"
 
+int depthMaxParcourue=0;
+int* p_depth = &depthMaxParcourue;
+
 int minMaxValue(Position *position_current, int computer_play ,int depth, int depthMax){
     int tab_values[8] = {0,0,0,0,0,0,0,0};
-    int i, res, affame;
+    int i, res, elagage;
+    int* p_elagage = &elagage;
+    
     Position position_next;
-    affame = etatAffame(position_current);
-    if (affame == 0 || affame == 1){
-        return evaluation(position_current, computer_play);
-    }
-
     if (finalPosition(position_current, computer_play)){
+        *p_depth = depth;
         return evaluation(position_current, computer_play);
     }
 
     if (depth == depthMax){
-        //printf("%d for cpu; profondeur: %d; computer_p %d\n", position_current->seeds_computer, depth, computer_play);
-        //printf("%d for player; profondeur: %d; computer_p %d\n", position_current->seeds_player, depth, computer_play);
+        *p_depth = depthMax;
         return evaluation(position_current, computer_play);
     }
 
     for (i=0; i<8; i++){
-        if (position_current->cells_computer[i]){
+        if (validMove(position_current, computer_play, i)){
             playMove(position_current, &position_next, i, computer_play);
-            tab_values[i] = minMaxValue(&position_next, !computer_play, depth+1, depthMax); 
+            tab_values[i] = minMaxValue(&position_next, !computer_play, depth+1, depthMax);
+            if (elagage){
+                if (tab_values[i] > 0 && elagage < 0){
+                    if (elagage > (tab_values[i] * (-1))){
+                        *p_elagage = searchMax(tab_values, depth);
+                        return elagage;
+                    }
+                }
+                if (tab_values[i] < 0 && elagage > 0){
+                    if (elagage < (tab_values[i] * (-1))){
+                        *p_elagage = searchMin(tab_values, depth);
+                        return elagage;
+                    }
+                }
+            }
         }
         else{
-            if (computer_play)  tab_values[i] -= 100;
-            else    tab_values[i] += 100; 
+            if (computer_play)  tab_values[i] -= 100000;
+            else    tab_values[i] += 100000; 
         }
     }
+
     if (computer_play)  res = searchMax(tab_values, depth);
     else    res = searchMin(tab_values, depth);
 
-    //printf("%d for cpu; profondeur: %d; computer_p: %d res %d\n", position_next.seeds_computer, depth, computer_play, res);
-    //printf("%d for player; profondeur: %d; computer_p: %d res %d\n", position_next.seeds_player, depth,computer_play, res);
+    *p_elagage = res;
+    if (depth == 1){
+        printf("\nProfondeur max atteinte : %d\n", depthMaxParcourue);
+    }
+
     return res;
+}
+
+//==========================================================================
+int validMove(Position* pos, int computer_play, int index){ //On vérifie si la case contient des graines 
+    if (computer_play){
+        return pos->cells_computer[index];  //True si la case est non vide, sinon faux
+    }
+    else{
+        return pos->cells_player[index];
+    }
 }
 
 //==========================================================================
@@ -46,6 +74,7 @@ void affiche(Position* pos){
     for (int i=0; i<8; i++){
         printf("%d[%d] ",i+1,pos->cells_computer[i]);
     }
+
     printf("\n===============================================\n");
     for (int i=0; i<8; i++){
         printf("%d[%d] ",j-i,pos->cells_player[i]);
@@ -59,6 +88,7 @@ void copieValeur(Position* pos_next, Position* pos_curent){
     for (int i=0; i<8; i++){
         pos_next->cells_computer[i] = pos_curent->cells_computer[i];
     }
+
     for (int i=0; i<8; i++){
         pos_next->cells_player[i] = pos_curent->cells_player[i];
     }
@@ -72,9 +102,11 @@ void initialisation(Position* pos){ //Etat initial de la grille
     for (int i=0; i<8; i++){
         pos->cells_computer[i] = 4;
     }
+
     for (int i=0; i<8; i++){
         pos->cells_player[i] = 4;
     }
+
     pos->computer_play = 1;
     pos->seeds_computer = 0;
     pos->seeds_player = 0;
@@ -138,6 +170,7 @@ int changeIndex(int index_choisi){
     if (index_choisi == 9){
         return 8;
     }
+
     return 15;
 }
 
@@ -159,6 +192,7 @@ int etatAffame(Position* pos_current){  //Vérifie si chaque joueur a toujours d
     for (int i=0; i<8; i++){
         seeds += pos_current->cells_computer[i];
     }
+
     if (seeds == 0){
         for (int i=0; i<8; i++){
             pos_current->seeds_player += pos_current->cells_player[i];
@@ -170,6 +204,7 @@ int etatAffame(Position* pos_current){  //Vérifie si chaque joueur a toujours d
     for (int i=0; i<8; i++){
         seeds += pos_current->cells_player[i];
     }
+
     if(seeds == 0){
         for (int i=0; i<8; i++){
             pos_current->seeds_computer += pos_current->cells_computer[i];
@@ -182,38 +217,35 @@ int etatAffame(Position* pos_current){  //Vérifie si chaque joueur a toujours d
 
 //==========================================================================
 int evaluation(Position* pos, int computer_play){
-    double valmax_double=0.0, seeds_cpu=0.0, seeds_player=0.0;
     int valmax_int;
     if (computer_play){
-        if (pos->seeds_player != 0){
-            if (pos->seeds_computer == 0){
-                return 1000;
-            }
-            seeds_cpu = pos->seeds_computer * 1.0;
-            seeds_player = pos->seeds_player * 1.0;
-            valmax_double = seeds_cpu / seeds_player;
-            valmax_int = (int)(valmax_double * (-100));
-        }
-        else{
-            valmax_int = pos->seeds_computer * (-6500);
-        }
+        valmax_int = calculFavorableIA(pos, -1);
         return valmax_int;
     }
     else {
-        if (pos->seeds_player != 0){
-            if (pos->seeds_computer == 0){
-                return -1000;
-            }
-            seeds_cpu = pos->seeds_computer * 1.0;
-            seeds_player = pos->seeds_player * 1.0;
-            valmax_double = seeds_cpu / seeds_player;
-            valmax_int = (int)(valmax_double * 100);
-        }
-        else{
-            valmax_int = pos->seeds_computer * 6500;
-        }
+        valmax_int = calculFavorableIA(pos, 1);
         return valmax_int;
     }
+}
+
+//==========================================================================
+int calculFavorableIA(Position* pos, int signe){
+    double valmax_double=0.0, seeds_cpu=0.0, seeds_player=0.0;
+    int valmax_int;
+    if (pos->seeds_player != 0){
+        if (pos->seeds_computer == 0){
+            return signe * 1000;
+        }
+        seeds_cpu = pos->seeds_computer * 1.0;
+        seeds_player = pos->seeds_player * 1.0;
+        valmax_double = seeds_cpu / seeds_player;
+        valmax_int = (int)(valmax_double * (signe * 100));
+        }
+    else{
+        valmax_int = pos->seeds_computer * (signe * 6500);
+        }
+
+    return valmax_int;
 }
 
 //==========================================================================
@@ -223,6 +255,7 @@ int getTotalSeeds(Position* pos){
     for (int i=0; i<8; i++){
         seeds_number += pos->cells_player[i];
     }
+
     for (int i=0; i<8; i++){
         seeds_number += pos->cells_computer[i];
     }
@@ -240,9 +273,11 @@ int searchMax(int* tab, int depth){
             index = i;
         } 
     }
+
     if (depth == 1){
         return index;
     }
+
     return max * -1;
 }
 
@@ -256,9 +291,11 @@ int searchMin(int* tab, int depth){
             index = i;
         }
     }
+
     if (depth == 1){
         return index;
     }
+
     return min * -1;
 }
 
@@ -289,6 +326,7 @@ int getLastIndexPlayer(int j){
     if (j==-8){
         index_player=7;
     }
+
     return index_player;
 }
 
@@ -323,6 +361,7 @@ int playMove(Position *position_current, Position* position_next, int index, int
                 i=1;
                 }
         }
+
         j--;
         while(j>7){
             if (position_next->cells_player[15-j] > 1 && position_next->cells_player[15-j] < 4){
@@ -334,6 +373,7 @@ int playMove(Position *position_current, Position* position_next, int index, int
                 break;
             }
         }
+
     }
     else{
         seeds = position_next->cells_player[index];
@@ -360,6 +400,7 @@ int playMove(Position *position_current, Position* position_next, int index, int
                 i = 1;
             }
         }
+
         j++;
         index_player = getLastIndexPlayer(j);
         while (index_player>-1)
@@ -377,7 +418,6 @@ int playMove(Position *position_current, Position* position_next, int index, int
     }
 
     nbre_graines = getTotalSeeds(position_next);
-
     return nbre_graines;    
 }
 

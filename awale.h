@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#define DEPTHMAX 8
+#define DEPTHMAX 12
 
 typedef struct {
 int cells_player[8]; // each cell contains a certain number of seeds
@@ -28,3 +28,5 @@ int etatAffame(Position*);
 void vider_buffer(FILE*);
 int changeIndex(int);
 int getLastIndexPlayer(int);
+int calculFavorableIA(Position*, int);
+int validMove(Position*, int, int);
