@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 #include "awale.h"
 
 int depthMaxParcourue=0;
@@ -426,4 +427,19 @@ void vider_buffer(FILE* f)
 {
     int c;
     while ((c=fgetc(f)) != '\n' && c != EOF);
+}
+
+
+//==========================================================================
+
+void sleep(int nbr_seconds)
+{
+	clock_t goal;
+
+	goal = (nbr_seconds * CLOCKS_PER_SEC) + clock();
+
+	while(goal > clock())
+	{
+		;
+	}
 }

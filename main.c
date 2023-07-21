@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include "awale.h"
+#include "awale.c"
 
 int main(int argc, char *argv[]){       
 Position position;
@@ -9,14 +9,15 @@ int best_index, index_choisi, graines_restantes = 65, affame;
 
 srand(time(NULL));
 initialisation(&position);
-affiche(&position);
 printf("Nom du joueur:");
 scanf("%s",position.name);
 printf("\n|       DEBUT DE LA PARTIE      |\n\n");
+affiche(&position);
 while(graines_restantes>8){
         if (position.computer_play){
                 if (position.debut != 1){
                         printf("Au tour du cpu :\n");
+                        sleep(2);
                         best_index = minMaxValue(&position, position.computer_play, 1, DEPTHMAX);
                         printf("Le cpu a joué la case numéro %d\n\n", best_index+1);
                         graines_restantes = playMove(&position, &position, best_index, position.computer_play);
@@ -24,6 +25,7 @@ while(graines_restantes>8){
                         printf ("\nGraines restantes sur le plateau: %d", graines_restantes);
                         printf("\nNombre de graines du cpu : %d\n", position.seeds_computer);
                         printf("Nombre de graines du joueur : %d\n\n", position.seeds_player);
+                        
                         affame = etatAffame(&position);
                         if (affame == 0 || affame == 1){
                                 graines_restantes = 0;
@@ -34,6 +36,7 @@ while(graines_restantes>8){
                 else{
                         best_index = rand() % 8;
                         printf("Au tour du cpu :\n");
+                        sleep(2);
                         printf("Le cpu a joué la case numéro %d\n\n", best_index+1);
                         graines_restantes = playMove(&position, &position, best_index, position.computer_play);
                         affiche(&position);
@@ -69,6 +72,7 @@ while(graines_restantes>8){
                 printf("\nNombre de graines du cpu : %d\n", position.seeds_computer);
                 printf("Nombre de graines du joueur : %d\n\n", position.seeds_player);
                 affame = etatAffame(&position);
+                sleep(2);
                 if (affame == 0 || affame == 1){
                         graines_restantes = 0;
                         break;
